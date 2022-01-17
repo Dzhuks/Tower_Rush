@@ -44,15 +44,12 @@ class Button(pygame.sprite.Sprite):
     def update(self, *args) -> None:
         if args:
             if args[0].type == pygame.MOUSEMOTION and self.is_collided(args[0].pos):
-                print('hover')
                 self.hover()
 
             elif args[0].type == pygame.MOUSEBUTTONDOWN and self.is_collided(args[0].pos):
-                print('active')
                 self.active()
 
             elif args[0].type == pygame.MOUSEBUTTONUP and self.is_collided(args[0].pos):
-                print('clicked')
                 self.clicked()
 
 
