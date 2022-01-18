@@ -21,72 +21,45 @@ def load_image(name, colorkey=None):
     return image
 
 
-class Button(pygame.sprite.Sprite):
-    def __init__(self, img, x, y, *group):
-        super().__init__(*group)
-        self.image = img
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-    def is_collided(self, pos) -> True:
-        return self.rect.collidepoint(*pos)
-
-    def hover(self):
-        pass
-
-    def active(self):
-        pass
-
-    def clicked(self):
-        pass
-
-    def update(self, *args) -> None:
-        if args:
-            if args[0].type == pygame.MOUSEMOTION and self.is_collided(args[0].pos):
-                self.hover()
-
-            elif args[0].type == pygame.MOUSEBUTTONDOWN and self.is_collided(args[0].pos):
-                self.active()
-
-            elif args[0].type == pygame.MOUSEBUTTONUP and self.is_collided(args[0].pos):
-                self.clicked()
-
-
 class MainMenu:
     def __init__(self, win: pygame.Surface):
-        self.bg_img = load_image("main_menu\\bg.png")
-        self.bg = pygame.transform.scale(self.bg_img, win.get_size())
-
-        self.buttons = pygame.sprite.Group()
-        self.start_btn_img = load_image("main_menu\\start_button.png")
-        self.start_btn = Button(self.start_btn_img, win.get_width() / 2 - self.start_btn_img.get_width() / 2,
-                                win.get_height() / 2 - self.start_btn_img.get_height() / 2, self.buttons)
         self.win = win
+        self.width, self.height = self.win.get_size()
+        self.bg = load_image('main_menu\\bg.png')
+        self.bg = pygame.transform.scale(self.bg, self.win.get_size())
+
+        self.logo = load_image('main_menu\\logo.png')
+
+        self.start_btn = load_image('main_menu\\start_button.png')
+        self.start_btn_x = self.width / 2 - self.start_btn.get_width() / 2
+        self.start_btn_y = 150
 
     def run(self):
         running = True
+
         while running:
             for event in pygame.event.get():
-                self.buttons.update(event)
                 if event.type == pygame.QUIT:
                     running = False
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     # check if hit start btn
-                    x1, y1 = pygame.mouse.get_pos()
-                    x2, y2 = self.start_btn.rect.topleft
-                    width, height = self.start_btn.rect.size
+                    x, y = pygame.mouse.get_pos()
 
-                    if x2 <= x1 <= x2 + width and y2 <= y1 <= y2 + height:
-                        game = Game(self.win)
-                        game.run()
-                        del game
+                    if self.start_btn_x <= x <= self.start_btn_x + self.start_btn.get_width():
+                        if self.start_btn_y <= y <= self.start_btn_y + self.start_btn.get_height():
+                            game = Game(self.win)
+                            game.run()
+                            del game
+                            running = False
 
+            self.win.fill(pygame.color.Color("black"))
             self.draw()
-
             pygame.display.flip()
+
+        pygame.quit()
 
     def draw(self):
         self.win.blit(self.bg, (0, 0))
-        self.buttons.draw(self.win)
+        self.win.blit(self.logo, (self.width / 2 - self.logo.get_width() / 2, 0))
+        self.win.blit(self.start_btn, (self.start_btn_x, self.start_btn_y))
