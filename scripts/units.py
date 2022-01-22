@@ -29,7 +29,6 @@ class Unit(pygame.sprite.Sprite):
         self.damage = cur.execute(f"SELECT damage FROM units WHERE name={name}").fetchall()[0][0]
         self.speed = cur.execute(f"SELECT speed FROM units WHERE name={name}").fetchall()[0][0]
         self.time_for_move = FPS // self.speed
-        self.range = cur.execute(f"SELECT range FROM units WHERE name={name}").fetchall()[0][0]
         self.cost = cur.execute(f"SELECT cost FROM units WHERE name={name}").fetchall()[0][0]
         self.money = cur.execute(f"SELECT money FROM units WHERE name={name}").fetchall()[0][0]
 
@@ -56,6 +55,9 @@ class Unit(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.rect.move(x, y)
+
+        self.range = cur.execute(f"SELECT range FROM units WHERE name={name}").fetchall()[0][0]
+        self.range = pygame.rect.Rect((x, y, self.rect.width + self.range, self.rect.height))
 
         self.iteration = 0
         self.can_get_money = True
@@ -104,7 +106,7 @@ class Unit(pygame.sprite.Sprite):
             sprite.attacked(self.damage)
 
 
-class Enemy(Unit):
+class EnemyUnit(Unit):
     def update(self, *args) -> None:
         self.iteration += 1
         if not self.is_alive:
