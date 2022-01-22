@@ -56,8 +56,8 @@ class Unit(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.move(x, y)
 
-        self.range = cur.execute(f"SELECT range FROM units WHERE name={name}").fetchall()[0][0]
-        self.range = pygame.rect.Rect((x, y, self.rect.width + self.range, self.rect.height))
+        self.range = self.rect.copy()
+        self.range.width += cur.execute(f"SELECT range FROM units WHERE name={name}").fetchall()[0][0]
 
         self.iteration = 0
         self.can_get_money = True
