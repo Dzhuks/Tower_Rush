@@ -115,12 +115,14 @@ class EnemyUnit(Unit):
         collided_player_units = pygame.sprite.spritecollide(self, PLAYER_SPRITES, False, collided=hitbox_collision)
         collided_player_tower = pygame.sprite.spritecollide(self, TOWER_SPRITES, False, collided=hitbox_collision)
         if len(collided_player_units) == len(collided_player_tower) == 0:
+            self.cur_attacking_frame = 0
             self.move()
             self.update_moving()
         else:
+            self.cur_moving_frame = 0
+            self.update_attacking()
             self.attack(collided_player_tower)
             self.attack(collided_player_units)
-            self.update_attacking()
 
     def move(self):
         if self.iteration % self.time_for_move == 0:
@@ -133,15 +135,17 @@ class PlayerUnit(Unit):
         if not self.is_alive:
             self.update_death()
             return
-        collided_player_units = pygame.sprite.spritecollide(self, ENEMIES_SPRITES, False, collided=hitbox_collision)
-        collided_player_tower = pygame.sprite.spritecollide(self, TOWER_SPRITES, False, collided=hitbox_collision)
-        if len(collided_player_units) == len(collided_player_tower) == 0:
+        collided_enemy_units = pygame.sprite.spritecollide(self, ENEMIES_SPRITES, False, collided=hitbox_collision)
+        collided_enemy_tower = pygame.sprite.spritecollide(self, TOWER_SPRITES, False, collided=hitbox_collision)
+        if len(collided_enemy_units) == len(collided_enemy_tower) == 0:
+            self.cur_attacking_frame = 0
             self.move()
             self.update_moving()
         else:
-            self.attack(collided_player_tower)
-            self.attack(collided_player_units)
+            self.cur_moving_frame = 0
             self.update_attacking()
+            self.attack(collided_enemy_units)
+            self.attack(collided_enemy_tower)
 
     def move(self):
         if self.iteration % self.time_for_move == 0:
