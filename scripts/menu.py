@@ -60,6 +60,13 @@ class BuyMenu(Menu):
         btn_y = self.rect.y + self.rect.height - btn_height
         self.buttons.add(BuyButton(unit_name, cost, btn_img, btn_x, btn_y))
 
+    def get_clicked(self, pos):
+        for btn in self.buttons.sprites():
+            if btn.is_clicked(pos):
+                return btn.name
+
+        return None
+
 
 class MainMenu(Menu):
     def __init__(self):
