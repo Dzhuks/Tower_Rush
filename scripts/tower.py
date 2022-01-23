@@ -11,6 +11,7 @@ class Tower(pygame.sprite.Sprite):
         self.max_hp = hp
         self.cur_hp = hp
         self.rect = self.image.get_rect()
+        self.rect.move(x, y)
         self.is_alive = True
 
     def attacked(self, damage):
