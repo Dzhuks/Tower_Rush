@@ -33,7 +33,7 @@ def load_sound(name):
     return pygame.mixer.Sound(fullname)
 
 
-def load_sound(name, size=30):
+def load_font(name, size=30):
     fullname = os.path.join('data', 'fonts', name)
     if not os.path.isfile(fullname):
         print(f"Файл с шрифтом '{fullname}' не найден")
