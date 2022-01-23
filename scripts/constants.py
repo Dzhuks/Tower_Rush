@@ -25,10 +25,13 @@ def load_image(name, colorkey=None):
     return image
 
 
-SIZE = WIDTH, HEIGHT = 600, 400
-SCREEN = pygame.display.set_mode(SIZE)
+SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 1200, 400
 FPS = 60
+CLOCK = pygame.time.Clock()
 ALL_SPRITES = pygame.sprite.Group()
 ENEMIES_SPRITES = pygame.sprite.Group()
 PLAYER_SPRITES = pygame.sprite.Group()
 TOWER_SPRITES = pygame.sprite.Group()
+
+BLACK = pygame.Color("black")
+ORANGE = pygame.Color(255, 165, 0)
