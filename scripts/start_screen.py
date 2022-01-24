@@ -12,7 +12,7 @@ def start_screen(win: pygame.Surface):
                   "и хотя его искусство завтрашнего дня и арифметики было велико ему пристояло еще многому научится.",
                   "Но я верила что Кличко спасет мир."]
     font = pygame.font.Font(None, 30)
-    fon = pygame.transform.scale(load_image('main_menu\\bg.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
+    fon = pygame.transform.scale(load_image('start_screen\\bg.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -25,7 +25,7 @@ def start_screen(win: pygame.Surface):
         for line in intro_text:
             string_rendered = font.render(line, True, ORANGE)
             intro_rect = string_rendered.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
-            text_coord += 10
+            text_coord += 30
             intro_rect.y = text_coord
             text_coord += intro_rect.height
             win.blit(string_rendered, intro_rect)
