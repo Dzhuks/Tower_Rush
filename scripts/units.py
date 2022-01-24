@@ -15,8 +15,8 @@ def hitbox_collision(sprite1, sprite2):
 
 
 class Unit(pygame.sprite.Sprite):
-    def __init__(self, name, x, y):
-        super(Unit, self).__init__()
+    def __init__(self, name, x, y, *groups):
+        super(Unit, self).__init__(*groups)
 
         self.name = name
 
@@ -119,8 +119,8 @@ class Unit(pygame.sprite.Sprite):
 
 
 class EnemyUnit(Unit):
-    def __init__(self, name, x, y):
-        super(EnemyUnit, self).__init__(name, x, y)
+    def __init__(self, name, x, y, *groups):
+        super(EnemyUnit, self).__init__(name, x, y, *groups)
         self.speed = -1
         self.range.width -= 2 * self.range.width + self.rect.width
 
