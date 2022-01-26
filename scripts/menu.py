@@ -27,6 +27,10 @@ class BuyButton(Button):
         rect = (0, 0, self.image.get_width(), self.image.get_height())
         pygame.draw.rect(self.image, BLACK, rect, 1)
 
+    def clicked(self, pos):
+        if self.is_clicked(pos):
+            return self.name, self.cost
+
 
 class PauseButton(Button):
     def __init__(self, name, pause_img, active_img, x, y, *group):
@@ -40,6 +44,10 @@ class PauseButton(Button):
             self.image = self.active_img
         else:
             self.image = self.pause_img
+
+    def clicked(self, pos):
+        if self.is_clicked(pos):
+            self.pause = not self.pause
 
 
 class Menu:
@@ -65,8 +73,8 @@ class BuyMenu(Menu):
 
     def get_clicked(self, pos):
         for btn in self.buttons.sprites():
-            if btn.is_clicked(pos):
-                return btn.name, btn.cost
+            if btn.clicked(pos) is not None:
+                return btn.clicked(pos)
 
         return None
 
