@@ -1,14 +1,24 @@
 from units import *
+import sqlite3
 
 
 class Tower(pygame.sprite.Sprite):
-    def __init__(self, whole_img, broken_img, hp, x, y, *groups):
+    def __init__(self, tower_id, whole_img, broken_img, hp, x, y, *groups):
         super(Tower, self).__init__(*groups)
-        self.whole_img = whole_img
-        self.broken_img = broken_img
+
+        self.con = sqlite3.connect("data\\stats_db.db")
+        cur = self.con.cursor()
+
+        self.whole_img = cur.execute(f"SELECT whole_img FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
+        self.whole_img = load_image(self.whole_img)
+
+        self.broken_img = cur.execute(f"SELECT broken_img FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
+        self.broken_img = load_image(self.whole_img)
+
+        self.max_hp = cur.execute(f"SELECT hp FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
+        self.cur_hp = self.max_hp
+
         self.image = self.whole_img
-        self.max_hp = hp
-        self.cur_hp = hp
         self.rect = self.image.get_rect()
         self.rect.move(x, y)
         self.is_whole = True
@@ -24,7 +34,7 @@ class Tower(pygame.sprite.Sprite):
         win.blit(string_rendered, (win.get_width() - string_rendered.get_width(), 0))
 
     def is_broken(self):
-        return self.is_whole
+        return not self.is_whole
 
     def update(self):
         if self.is_whole:
