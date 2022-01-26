@@ -3,7 +3,7 @@ import sqlite3
 
 
 class Tower(pygame.sprite.Sprite):
-    def __init__(self, tower_id, whole_img, broken_img, hp, x, y, *groups):
+    def __init__(self, tower_id, x, y, *groups):
         super(Tower, self).__init__(*groups)
 
         self.con = sqlite3.connect("data\\stats_db.db")
