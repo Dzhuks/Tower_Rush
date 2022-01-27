@@ -1,4 +1,4 @@
-from units import *
+from scripts.units import *
 import sqlite3
 
 
@@ -6,7 +6,7 @@ class Tower(pygame.sprite.Sprite):
     def __init__(self, tower_id, x, y, *groups):
         super(Tower, self).__init__(*groups)
 
-        self.con = sqlite3.connect("data\\stats_db.db")
+        self.con = sqlite3.connect(DATABASE)
         cur = self.con.cursor()
 
         self.whole_img = cur.execute(f"SELECT whole_img FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]

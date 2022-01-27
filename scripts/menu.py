@@ -81,18 +81,14 @@ class BuyMenu(Menu):
 
 class MainMenu(Menu):
     def __init__(self):
-        bg = load_image('main_menu\\bg.png')
+        bg = load_image('main_menu\\main_menu.png')
         super(MainMenu, self).__init__(bg, 0, 0)
-
-        self.logo = load_image('main_menu\\logo.png')
 
         start_btn_img = load_image('main_menu\\start_button.png')
         start_btn_x = self.rect.width / 2 - start_btn_img.get_width() / 2
-        start_btn_y = self.logo.get_height() + 10
+        start_btn_y = self.rect.height / 2 - start_btn_img.get_height() / 2
         self.start_btn = Button("start button", start_btn_img, start_btn_x, start_btn_y)
         self.buttons.add(self.start_btn)
-
-        self.bg.blit(self.logo, (self.rect.width / 2 - self.logo.get_width() / 2, 0))
         self.buttons.draw(self.bg)
 
     def run(self, win: pygame.Surface):

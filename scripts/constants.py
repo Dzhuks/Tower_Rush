@@ -3,6 +3,24 @@ import sys
 import os
 
 
+pygame.init()
+SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 600, 400
+screen = pygame.display.set_mode(SIZE)
+
+FPS = 60
+GRAVITY = 5
+
+DATABASE = "data\\stats_db.db"
+
+ALL_SPRITES = pygame.sprite.Group()
+ENEMIES_SPRITES = pygame.sprite.Group()
+PLAYER_SPRITES = pygame.sprite.Group()
+TOWER_SPRITES = pygame.sprite.Group()
+
+BLACK = pygame.Color("black")
+ORANGE = pygame.Color(255, 165, 0)
+
+
 def terminate():
     pygame.quit()
     sys.exit()
@@ -39,15 +57,3 @@ def load_font(name, size=30):
         print(f"Файл с шрифтом '{fullname}' не найден")
         terminate()
     return pygame.font.Font(fullname, size)
-
-
-SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 1200, 400
-FPS = 60
-CLOCK = pygame.time.Clock()
-ALL_SPRITES = pygame.sprite.Group()
-ENEMIES_SPRITES = pygame.sprite.Group()
-PLAYER_SPRITES = pygame.sprite.Group()
-TOWER_SPRITES = pygame.sprite.Group()
-
-BLACK = pygame.Color("black")
-ORANGE = pygame.Color(255, 165, 0)

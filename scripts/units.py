@@ -7,7 +7,7 @@ from scripts.constants import *
 
 class Particle(pygame.sprite.Sprite):
     # сгенерируем частицы разного размера
-    fire = [load_image("star.png")]
+    fire = [load_image("sprites\\star.png")]
     for scale in (5, 10, 20):
         fire.append(pygame.transform.scale(fire[0], (scale, scale)))
 
@@ -53,7 +53,7 @@ class Unit(pygame.sprite.Sprite):
 
         self.name = name
 
-        self.con = sqlite3.connect("data\\stats_db.db")
+        self.con = sqlite3.connect(DATABASE)
         cur = self.con.cursor()
 
         self.image = load_image(cur.execute(f"SELECT image FROM units WHERE name={name}").fetchall()[0][0])
@@ -69,7 +69,7 @@ class Unit(pygame.sprite.Sprite):
         speed = cur.execute(f"SELECT speed FROM units WHERE name={name}").fetchall()[0][0]
         self.time_for_move = FPS // speed
         self.tba = cur.execute(f"SELECT TBA FROM units WHERE name={name}").fetchall()[0][0]
-        self.speed = 1
+        self.speed = -1
         self.cost = cur.execute(f"SELECT cost FROM units WHERE name={name}").fetchall()[0][0]
         self.money = cur.execute(f"SELECT money FROM units WHERE name={name}").fetchall()[0][0]
 
@@ -160,7 +160,7 @@ class Unit(pygame.sprite.Sprite):
 class EnemyUnit(Unit):
     def __init__(self, name, x, y, *groups):
         super(EnemyUnit, self).__init__(name, x, y, *groups)
-        self.speed = -1
+        self.speed = 1
         self.range.width -= 2 * self.range.width + self.rect.width
 
     def update(self, *args) -> None:

@@ -6,7 +6,7 @@ from scripts.tower import *
 
 class Game:
     def __init__(self):
-        self.con = sqlite3.connect("data\\stats_db.db")
+        self.con = sqlite3.connect(DATABASE)
         self.money = 0
 
         self.menu = BuyMenu(load_image(""), 0, SCREEN_HEIGHT - 100)

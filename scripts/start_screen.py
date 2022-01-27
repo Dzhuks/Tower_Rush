@@ -12,7 +12,7 @@ def start_screen(win: pygame.Surface):
                   "и хотя его искусство завтрашнего дня и арифметики было велико ему пристояло еще многому научится.",
                   "Но я верила что Кличко спасет мир."]
     font = pygame.font.Font(None, 30)
-    fon = pygame.transform.scale(load_image('start_screen\\bg.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
+    fon = pygame.transform.scale(load_image('start_screen\\background_start.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
