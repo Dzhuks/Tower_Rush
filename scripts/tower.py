@@ -46,9 +46,9 @@ class Tower(pygame.sprite.Sprite):
 
 class EnemyTower(Tower):
     def spawn(self, name):
-        EnemyUnit(name, self.rect.x + self.rect.width / 2, self.rect.y, ENEMIES_SPRITES)
+        EnemyUnit(name, self.rect.x + self.rect.width / 2, self.rect.y, ENEMIES_SPRITES, ALL_SPRITES)
 
 
 class PlayerTower(Tower):
     def spawn(self, name):
-        Unit(name, self.rect.x + self.rect.width / 2, self.rect.y, PLAYER_SPRITES)
+        Unit(name, self.rect.x + self.rect.width / 2, self.rect.y, PLAYER_SPRITES, ALL_SPRITES)

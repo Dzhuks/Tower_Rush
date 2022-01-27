@@ -28,8 +28,8 @@ class Game:
         enemy_tower_id = result[1]
         player_tower_id = result[2]
 
-        self.enemy_tower = EnemyTower(enemy_tower_id, 0, 200, TOWER_SPRITES)
-        self.player_tower = PlayerTower(player_tower_id, 600, 200, TOWER_SPRITES)
+        self.enemy_tower = EnemyTower(enemy_tower_id, 0, 200, TOWER_SPRITES, ALL_SPRITES)
+        self.player_tower = PlayerTower(player_tower_id, 600, 200, TOWER_SPRITES, ALL_SPRITES)
 
     def add_units(self):
         cur = self.con.cursor()
