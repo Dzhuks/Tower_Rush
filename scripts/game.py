@@ -9,8 +9,8 @@ class Game:
         self.con = sqlite3.connect(DATABASE)
         self.money = 0
 
-        self.menu = BuyMenu(load_image(""), 0, SCREEN_HEIGHT - 100)
-        self.add_units()
+        self.menu = BuyMenu(load_image("backgrounds\\buy_menu.png"), 0, SCREEN_HEIGHT - 100)
+        # self.add_units()
 
         self.cur_level = 1
         self.levels = {}
@@ -18,18 +18,27 @@ class Game:
         self.pause_button = PauseButton("pause_button", load_image(""), load_image(""), 550, 0, ALL_SPRITES)
 
     def render_level(self):
+        for sprite in PLAYER_SPRITES.sprites():
+            sprite.kill()
+        for sprite in ENEMIES_SPRITES.sprites():
+            sprite.kill()
+        PLAYER_SPRITES.empty()
+        ENEMIES_SPRITES.empty()
         cur = self.con.cursor()
         que = f"""
         SELECT bg, enemy_tower_id, player_tower_id FROM levels 
             WHERE level_number={self.cur_level}"""
         result = cur.execute(que).fetchall()[0]
+        if not result:
+            self.win()
+            return
         self.bg = result[0]
 
         enemy_tower_id = result[1]
         player_tower_id = result[2]
 
-        self.enemy_tower = EnemyTower(enemy_tower_id, 0, 200, TOWER_SPRITES, ALL_SPRITES)
-        self.player_tower = PlayerTower(player_tower_id, 600, 200, TOWER_SPRITES, ALL_SPRITES)
+        self.enemy_tower = EnemyTower(enemy_tower_id, 0, 200, TOWER_SPRITES)
+        self.player_tower = PlayerTower(player_tower_id, 600, 200, TOWER_SPRITES)
 
     def add_units(self):
         cur = self.con.cursor()
@@ -80,6 +89,12 @@ class Game:
                         elif self.pause_button.is_clicked(event.pos):
                             self.pause_button.clicked(event)
                             paused = self.pause_button.pause
+                if not self.enemy_tower.is_whole:
+                    self.cur_level += 1
+                    self.render_level()
+
+                if not self.player_tower.is_whole:
+                    self.game_over()
                 self.gen_enemies(iteration)
                 win.fill(pygame.Color('black'))
                 ALL_SPRITES.draw(win)
