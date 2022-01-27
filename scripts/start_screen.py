@@ -3,15 +3,16 @@ from scripts.constants import *
 
 def start_screen(win: pygame.Surface):
     count_frames = 0
-    speed = 2 / FPS
-    intro_text = ["Котики, Люди, Школьники",
-                  "Когда-то давно все они жили в мире, но все изменилось когда Поносенко всех переиграл и уничтожил",
-                  "Только Амогус властелин всех мемов и рофлов мог остановить войну.",
+    speed = 1 / FPS
+    intro_text = ["Котики. Люди. Школьники.",
+                  "Когда-то давно все эти расы жили в мире.",
+                  "Но всё изменилось, когда Поносенко всех переиграл и уничтожил.",
+                  "Только Амогус, властелин всех мемов и рофлов, мог остановить Поносенко.",
                   "Но когда мир нуждался в амогусе больше всего он исчез.",
-                  "Прошло десять лет и появился новый Амогус под именем Кличко, ",
-                  "и хотя его искусство завтрашнего дня и арифметики было велико ему пристояло еще многому научится.",
-                  "Но я верила что Кличко спасет мир."]
-    font = pygame.font.Font(None, 30)
+                  "Прошло десять лет, и мы с Маратом нашли нового Амогуса, в маге жука по имени Джук.",
+                  "И хотя его искусство покорения жука было велико, ему предстояло ещё многому научиться.",
+                  "Но я верила, что Джук спасёт мир."]
+    font = pygame.font.Font(None, 18)
     fon = pygame.transform.scale(load_image('start_screen\\background_start.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
     while True:
         for event in pygame.event.get():
@@ -25,7 +26,7 @@ def start_screen(win: pygame.Surface):
         for line in intro_text:
             string_rendered = font.render(line, True, ORANGE)
             intro_rect = string_rendered.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
-            text_coord += 30
+            text_coord += 25
             intro_rect.y = text_coord
             text_coord += intro_rect.height
             win.blit(string_rendered, intro_rect)
