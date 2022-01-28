@@ -1,5 +1,4 @@
 from scripts.constants import *
-from scripts.game import Game
 
 
 class Button(pygame.sprite.Sprite):
@@ -33,10 +32,10 @@ class BuyButton(Button):
 
 
 class PauseButton(Button):
-    def __init__(self, name, pause_img, active_img, x, y, *group):
-        super(PauseButton, self).__init__(name, pause_img, x, y, *group)
-        self.pause_img = pause_img
-        self.active_img = active_img
+    def __init__(self, name, x, y, *group):
+        self.pause_img = load_image("icons\\pause_button.png")
+        self.active_img = load_image("icons\\resume_button.png")
+        super(PauseButton, self).__init__(name, self.pause_img, x, y, *group)
         self.pause = False
 
     def update(self, *args) -> None:
@@ -48,6 +47,7 @@ class PauseButton(Button):
     def clicked(self, pos):
         if self.is_clicked(pos):
             self.pause = not self.pause
+            print(self.pause)
 
 
 class Menu:
@@ -77,38 +77,3 @@ class BuyMenu(Menu):
                 return btn.clicked(pos)
 
         return None
-
-
-class MainMenu(Menu):
-    def __init__(self):
-        bg = load_image('main_menu\\main_menu.png')
-        super(MainMenu, self).__init__(bg, 0, 0)
-
-        start_btn_img = load_image('main_menu\\start_button.png')
-        start_btn_x = self.rect.width / 2 - start_btn_img.get_width() / 2
-        start_btn_y = self.rect.height / 2 - start_btn_img.get_height() / 2
-        self.start_btn = Button("start button", start_btn_img, start_btn_x, start_btn_y)
-        self.buttons.add(self.start_btn)
-        self.buttons.draw(self.bg)
-
-    def run(self, win: pygame.Surface):
-        running = True
-
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    # check if hit start btn
-
-                    if self.start_btn.is_clicked(event.pos):
-                        game = Game()
-                        game.run(win)
-                        running = False
-
-            win.fill(pygame.color.Color("black"))
-            win.blit(self.bg, self.rect.topleft)
-            pygame.display.flip()
-
-        pygame.quit()

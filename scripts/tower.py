@@ -10,10 +10,10 @@ class Tower(pygame.sprite.Sprite):
         cur = self.con.cursor()
 
         self.whole_img = cur.execute(f"SELECT whole_img FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
-        self.whole_img = load_image(self.whole_img)
+        self.whole_img = load_image(f"sprites\\towers\\{self.whole_img}")
 
         self.broken_img = cur.execute(f"SELECT broken_img FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
-        self.broken_img = load_image(self.whole_img)
+        self.broken_img = load_image(f"sprites\\towers\\{self.broken_img}")
 
         self.max_hp = cur.execute(f"SELECT hp FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
         self.cur_hp = self.max_hp

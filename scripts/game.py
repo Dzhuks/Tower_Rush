@@ -1,7 +1,8 @@
 import pygame
 import sqlite3
-from scripts.menu import *
+from scripts.menu import BuyMenu, PauseButton
 from scripts.tower import *
+from scripts.game_over import game_over
 
 
 class Game:
@@ -15,7 +16,7 @@ class Game:
         self.cur_level = 1
         self.levels = {}
         self.render_level()
-        self.pause_button = PauseButton("pause_button", load_image(""), load_image(""), 550, 0, ALL_SPRITES)
+        self.pause_button = PauseButton("pause_button", 550, 0, ALL_SPRITES)
 
     def render_level(self):
         for sprite in PLAYER_SPRITES.sprites():
@@ -53,6 +54,7 @@ class Game:
             self.player_tower.spawn(name)
 
     def gen_enemies(self, frames):
+        return
         enemies = self.levels[self.cur_level]
         for enemy in enemies.keys():
             time = enemies[enemy]
@@ -77,7 +79,7 @@ class Game:
                         running = False
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.pause_button.is_clicked(event.pos):
-                            self.pause_button.clicked(event)
+                            self.pause_button.clicked(event.pos)
                             paused = self.pause_button.pause
             else:
                 for event in pygame.event.get():
@@ -87,15 +89,17 @@ class Game:
                         if self.menu.get_clicked(event.pos) is not None:
                             self.spawn(*self.menu.get_clicked(event.pos))
                         elif self.pause_button.is_clicked(event.pos):
-                            self.pause_button.clicked(event)
+                            self.pause_button.clicked(event.pos)
                             paused = self.pause_button.pause
                 if not self.enemy_tower.is_whole:
                     self.cur_level += 1
                     self.render_level()
 
                 if not self.player_tower.is_whole:
-                    self.game_over()
+                    game_over(win)
+                    running = False
                 self.gen_enemies(iteration)
+                ALL_SPRITES.update()
                 win.fill(pygame.Color('black'))
                 ALL_SPRITES.draw(win)
                 TOWER_SPRITES.draw(win)
