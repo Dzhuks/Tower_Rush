@@ -48,6 +48,10 @@ def hitbox_collision(sprite1, sprite2):
 
 
 class Unit(pygame.sprite.Sprite):
+    DEATH_ANIMATION = load_image("sprites\\death_animation")
+    DEATH_ANIMATION_ROWS = 5
+    DEATH_ANIMATION_COLUMNS = 1
+
     def __init__(self, name, x, y, *groups):
         super(Unit, self).__init__(*groups)
 
@@ -56,9 +60,16 @@ class Unit(pygame.sprite.Sprite):
         self.con = sqlite3.connect(DATABASE)
         cur = self.con.cursor()
 
-        self.image = load_image(cur.execute(f"SELECT image FROM units WHERE name={name}").fetchall()[0][0])
-        self.rect = self.image.get_rect()
-        self.rect.move(x, y)
+        animation = load_image(cur.execute(f"SELECT image FROM units WHERE name={name}").fetchall()[0][0])
+        rows, columns = cur.execute(f"SELECT rows, columns FROM units WHERE name={name}").fetchall()[0]
+
+        self.frames = self.cut_sheet(animation, rows, columns)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.image.get_rect().move(x, y)
+
+        self.cur_death_frame = -1
+        self.death_frames = self.cut_sheet(Unit.DEATH_ANIMATION, Unit.DEATH_ANIMATION_ROWS, Unit.DEATH_ANIMATION_COLUMNS)
 
         self.range = self.rect.copy()
         self.range.width += cur.execute(f"SELECT range FROM units WHERE name={name}").fetchall()[0][0]
@@ -66,59 +77,50 @@ class Unit(pygame.sprite.Sprite):
         self.hp = cur.execute(f"SELECT hp FROM units WHERE name={name}").fetchall()[0][0]
 
         self.damage = cur.execute(f"SELECT damage FROM units WHERE name={name}").fetchall()[0][0]
+
         speed = cur.execute(f"SELECT speed FROM units WHERE name={name}").fetchall()[0][0]
         self.time_for_move = FPS // speed
-        self.tba = cur.execute(f"SELECT TBA FROM units WHERE name={name}").fetchall()[0][0]
+
+        self.tba = 0
         self.speed = -1
+
         self.cost = cur.execute(f"SELECT cost FROM units WHERE name={name}").fetchall()[0][0]
         self.money = cur.execute(f"SELECT money FROM units WHERE name={name}").fetchall()[0][0]
-
-        moving_animation = cur.execute(f"SELECT moving_animation FROM units WHERE name={name}").fetchall()[0][0]
-        moving_animation = load_image(moving_animation)
-        self.cur_moving_frame = -1
-        self.move_frames = self.cut_sheet(moving_animation)
-
-        death_animation = cur.execute(f"SELECT death_animation FROM units WHERE name={name}").fetchall()[0][0]
-        death_animation = load_image(death_animation)
-        self.cur_death_frame = -1
-        self.death_frames = self.cut_sheet(death_animation)
 
         self.alive = True
         self.iteration = 0
 
-    def cut_sheet(self, sheet: pygame.Surface):
+    def cut_sheet(self, sheet: pygame.Surface, rows, columns):
         frames = []
-        rows = sheet.get_width() // self.rect.width
-        columns = sheet.get_height() // self.rect.height
+        size = width, height = sheet.get_width() // rows, sheet.get_height() // columns
         for j in range(rows):
             for i in range(columns):
-                frame_location = (self.rect.width * i, self.rect.height * j)
-                frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
+                frame_location = (width * i, height * j)
+                frames.append(sheet.subsurface(pygame.Rect(frame_location, size)))
         return frames
 
     def update_death(self):
         self.cur_death_frame += 1
-        if self.cur_death_frame > len(self.death_frames):
+        if self.cur_death_frame >= len(self.death_frames):
             self.kill()
             del self
         else:
             self.image = self.death_frames[self.cur_death_frame]
 
     def move(self):
-        cur = self.con.cursor()
-        self.tba = cur.execute(f"SELECT TBA FROM units WHERE name={self.name}").fetchall()[0][0]
+        self.tba = 0
         if self.iteration % self.time_for_move:
             self.rect.x += self.speed
-            self.cur_moving_frame = (self.cur_moving_frame + 1) % len(self.move_frames)
-            self.image = self.move_frames[self.cur_moving_frame]
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
 
     def attack(self, group: list):
-        cur = self.con.cursor()
-        self.cur_moving_frame = 0
+        self.cur_frame = 0
         self.tba -= 1
         if self.tba == 0:
             for unit in group:
                 unit.defense(self.damage)
+            cur = self.con.cursor()
             self.tba = cur.execute(f"SELECT TBA FROM units WHERE name={self.name}").fetchall()[0][0]
 
     def create_particles(self, position):
