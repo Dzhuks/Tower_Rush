@@ -5,7 +5,7 @@ def game_over(win: pygame.Surface):
     alpha = 0
     fon = load_image("game_over\\game_over.png")
     font = load_font("coldnightforalligators.otf", 60)
-    string_rendered = font.render("Переиграл   и   Уничтожил", True, BLOAD_RED)
+    string_rendered = font.render("Переиграл   и   Уничтожил", True, BLOOD_RED)
     text_coord = win.get_width() / 2 - string_rendered.get_width() / 2, 265
     string_rendered = pygame.transform.scale(string_rendered, (string_rendered.get_width(), 100))
     clock = pygame.time.Clock()
