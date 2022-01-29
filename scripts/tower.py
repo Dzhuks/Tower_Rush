@@ -1,10 +1,9 @@
 from scripts.units import *
-import sqlite3
 
 
-class Tower(pygame.sprite.Sprite):
-    def __init__(self, tower_id, x, y, *groups):
-        super(Tower, self).__init__(*groups)
+class PlayerTower(pygame.sprite.Sprite):
+    def __init__(self, tower_id, *groups):
+        super(PlayerTower, self).__init__(*groups)
 
         self.con = sqlite3.connect(DATABASE)
         cur = self.con.cursor()
@@ -20,18 +19,21 @@ class Tower(pygame.sprite.Sprite):
 
         self.image = self.whole_img
         self.rect = self.image.get_rect()
-        self.rect.move(x, y)
+        self.rect.x = BATTLEFIELD_WIDTH - self.rect.width
+        self.rect.y = BATTLEFIELD_HEIGHT - self.rect.height
         self.is_whole = True
 
     def defense(self, damage):
+        print(self.cur_hp)
         self.cur_hp -= damage
         if self.cur_hp <= 0:
             self.is_whole = False
 
     def draw_health_bar(self, win):
-        font = pygame.font.Font(None, 30)
-        string_rendered = font.render(f"{self.cur_hp}/{self.max_hp}", True, ORANGE)
-        win.blit(string_rendered, (win.get_width() - string_rendered.get_width(), 0))
+        font = pygame.font.Font(None, 15)
+        string_rendered = font.render(f"{self.cur_hp}/{self.max_hp}", True, DARK_GREEN)
+        win.blit(string_rendered, (self.rect.width - string_rendered.get_width(), 0))
+        return win
 
     def is_broken(self):
         return not self.is_whole
@@ -41,14 +43,16 @@ class Tower(pygame.sprite.Sprite):
             self.image = self.whole_img
         else:
             self.image = self.broken_img
-        self.draw_health_bar(self.image)
+        self.image = self.draw_health_bar(self.image.copy())
 
-
-class EnemyTower(Tower):
     def spawn(self, name):
-        EnemyUnit(name, self.rect.x + self.rect.width / 2, self.rect.y, ENEMIES_SPRITES, ALL_SPRITES)
+        Unit(name, self, PLAYER_SPRITES, ALL_SPRITES)
 
 
-class PlayerTower(Tower):
+class EnemyTower(PlayerTower):
+    def __init__(self, tower_id, *groups):
+        super(EnemyTower, self).__init__(tower_id, *groups)
+        self.rect.x = 0
+
     def spawn(self, name):
-        Unit(name, self.rect.x + self.rect.width / 2, self.rect.y, PLAYER_SPRITES, ALL_SPRITES)
+        EnemyUnit(name, self, ENEMIES_SPRITES, ALL_SPRITES)
