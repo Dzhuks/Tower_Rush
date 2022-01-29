@@ -1,4 +1,7 @@
+import sqlite3
+
 from scripts.constants import *
+from scripts.units import cut_sheet
 
 
 class Button(pygame.sprite.Sprite):
@@ -19,7 +22,7 @@ class BuyButton(Button):
         super(BuyButton, self).__init__(unit_name, img, x, y, *group)
         self.cost = cost
         font = pygame.font.Font(None, 20)
-        cost_text = font.render(str(self.cost), True, WHITE)
+        cost_text = font.render(f"{self.cost}$", True, WHITE)
         cost_text_x = self.image.get_width() - cost_text.get_width()
         cost_text_y = self.image.get_height() - cost_text.get_height()
         self.image.blit(cost_text, (cost_text_x, cost_text_y))
@@ -47,7 +50,6 @@ class PauseButton(Button):
     def clicked(self, pos):
         if self.is_clicked(pos):
             self.pause = not self.pause
-            print(self.pause)
 
 
 class Menu:
@@ -63,14 +65,22 @@ class Menu:
 
 class BuyMenu(Menu):
     def __init__(self):
-        super(BuyMenu, self).__init__(load_image("backgrounds\\buy_menu.png"), 0, SCREEN_HEIGHT - 100)
+        super(BuyMenu, self).__init__(load_image("backgrounds\\buy_menu.png"), 0, 0)
+        self.rect.y = SCREEN_HEIGHT - self.rect.height
     
-    def add_button(self, unit_name, cost, unit_img: pygame.Surface):
+    def add_unit(self, unit_name, cost):
+        con = sqlite3.connect(DATABASE)
+        cur = con.cursor()
+
+        animation = load_image(cur.execute(f"SELECT animation FROM units WHERE name=\"{unit_name}\"").fetchall()[0][0])
+        rows, columns = cur.execute(f"SELECT rows, columns FROM units WHERE name=\"{unit_name}\"").fetchall()[0]
+        unit_img = cut_sheet(animation, rows, columns)[0]
+
         btn_size = btn_width, btn_height = 90, 50
         btn_img = pygame.transform.scale(unit_img, btn_size)
         btn_x = self.rect.x + (btn_width + 10) * len(self.buttons.sprites())
         btn_y = self.rect.y + self.rect.height - btn_height
-        self.buttons.add(BuyButton(unit_name, cost, btn_img, btn_x, btn_y, self.buttons))
+        BuyButton(unit_name, cost, btn_img, btn_x, btn_y, self.buttons)
 
     def get_clicked(self, pos):
         for btn in self.buttons.sprites():
