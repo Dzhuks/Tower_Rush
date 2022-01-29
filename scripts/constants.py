@@ -4,22 +4,24 @@ import os
 
 
 pygame.init()
-SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 600, 400
-screen = pygame.display.set_mode(SIZE)
+SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 600, 400
+BATTLEFIELD_SIZE = BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT = SCREEN_WIDTH, SCREEN_HEIGHT - 100
+screen = pygame.display.set_mode(SCREEN_SIZE)
 
 FPS = 60
-GRAVITY = 5
+GRAVITY = 1
 
 DATABASE = "data\\stats_db.db"
 
 ALL_SPRITES = pygame.sprite.Group()
 ENEMIES_SPRITES = pygame.sprite.Group()
 PLAYER_SPRITES = pygame.sprite.Group()
-TOWER_SPRITES = pygame.sprite.Group()
 
+WHITE = pygame.Color("white")
 BLACK = pygame.Color("black")
 ORANGE = pygame.Color(255, 165, 0)
-BLOAD_RED = pygame.Color(102, 0, 0)
+BLOOD_RED = pygame.Color(102, 0, 0)
+DARK_GREEN = pygame.Color(23, 114, 69)
 
 
 def terminate():

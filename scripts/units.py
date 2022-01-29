@@ -48,11 +48,11 @@ def hitbox_collision(sprite1, sprite2):
 
 
 class Unit(pygame.sprite.Sprite):
-    DEATH_ANIMATION = load_image("sprites\\death_animation")
+    DEATH_ANIMATION = load_image("sprites\\death_animation.png")
     DEATH_ANIMATION_ROWS = 5
     DEATH_ANIMATION_COLUMNS = 1
 
-    def __init__(self, name, x, y, *groups):
+    def __init__(self, name, tower, *groups):
         super(Unit, self).__init__(*groups)
 
         self.name = name
@@ -60,39 +60,41 @@ class Unit(pygame.sprite.Sprite):
         self.con = sqlite3.connect(DATABASE)
         cur = self.con.cursor()
 
-        animation = load_image(cur.execute(f"SELECT image FROM units WHERE name={name}").fetchall()[0][0])
-        rows, columns = cur.execute(f"SELECT rows, columns FROM units WHERE name={name}").fetchall()[0]
+        animation = load_image(cur.execute(f"SELECT animation FROM units WHERE name=\"{name}\"").fetchall()[0][0])
+        rows, columns = cur.execute(f"SELECT rows, columns FROM units WHERE name=\"{name}\"").fetchall()[0]
 
         self.frames = self.cut_sheet(animation, rows, columns)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
-        self.rect = self.image.get_rect().move(x, y)
+        self.rect = self.image.get_rect()
+        self.rect.x = tower.rect.x + tower.rect.width / 2
+        self.rect.y = tower.rect.bottom - self.rect.height
+
+        self.x_pos = self.rect.x
 
         self.cur_death_frame = -1
         self.death_frames = self.cut_sheet(Unit.DEATH_ANIMATION, Unit.DEATH_ANIMATION_ROWS, Unit.DEATH_ANIMATION_COLUMNS)
 
         self.range = self.rect.copy()
-        self.range.width += cur.execute(f"SELECT range FROM units WHERE name={name}").fetchall()[0][0]
+        self.move_range()
 
-        self.hp = cur.execute(f"SELECT hp FROM units WHERE name={name}").fetchall()[0][0]
+        self.hp = cur.execute(f"SELECT hp FROM units WHERE name=\"{name}\"").fetchall()[0][0]
 
-        self.damage = cur.execute(f"SELECT damage FROM units WHERE name={name}").fetchall()[0][0]
+        self.damage = cur.execute(f"SELECT damage FROM units WHERE name=\"{name}\"").fetchall()[0][0]
 
-        speed = cur.execute(f"SELECT speed FROM units WHERE name={name}").fetchall()[0][0]
-        self.time_for_move = FPS // speed
+        self.speed = -cur.execute(f"SELECT speed FROM units WHERE name=\"{name}\"").fetchall()[0][0] / FPS
 
         self.tba = 0
-        self.speed = -1
 
-        self.cost = cur.execute(f"SELECT cost FROM units WHERE name={name}").fetchall()[0][0]
-        self.money = cur.execute(f"SELECT money FROM units WHERE name={name}").fetchall()[0][0]
+        self.cost = cur.execute(f"SELECT cost FROM units WHERE name=\"{name}\"").fetchall()[0][0]
+        self.money = cur.execute(f"SELECT money FROM units WHERE name=\"{name}\"").fetchall()[0][0]
 
         self.alive = True
         self.iteration = 0
 
     def cut_sheet(self, sheet: pygame.Surface, rows, columns):
         frames = []
-        size = width, height = sheet.get_width() // rows, sheet.get_height() // columns
+        size = width, height = sheet.get_width() // columns, sheet.get_height() // rows
         for j in range(rows):
             for i in range(columns):
                 frame_location = (width * i, height * j)
@@ -108,20 +110,25 @@ class Unit(pygame.sprite.Sprite):
             self.image = self.death_frames[self.cur_death_frame]
 
     def move(self):
-        self.tba = 0
-        if self.iteration % self.time_for_move:
-            self.rect.x += self.speed
+        self.x_pos += self.speed
+        self.rect.x = int(self.x_pos)
+        self.move_range()
+        if self.iteration % 6 == 0:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
 
+    def move_range(self):
+        cur = self.con.cursor()
+        self.range = self.rect.copy()
+        self.range.x -= cur.execute(f"SELECT range FROM units WHERE name=\"{self.name}\"").fetchall()[0][0]
+
     def attack(self, group: list):
         self.cur_frame = 0
-        self.tba -= 1
-        if self.tba == 0:
+        if self.tba <= 0:
             for unit in group:
                 unit.defense(self.damage)
             cur = self.con.cursor()
-            self.tba = cur.execute(f"SELECT TBA FROM units WHERE name={self.name}").fetchall()[0][0]
+            self.tba = cur.execute(f"SELECT TBA FROM units WHERE name=\"{self.name}\"").fetchall()[0][0] * FPS
 
     def create_particles(self, position):
         # количество создаваемых частиц
@@ -149,21 +156,25 @@ class Unit(pygame.sprite.Sprite):
             self.update_death()
             return
 
-        if not pygame.sprite.spritecollideany(self, PLAYER_SPRITES):
-            if not pygame.sprite.spritecollideany(self, TOWER_SPRITES):
-                self.move()
-                return
+        self.tba = max(0, self.tba - 1)
 
-        collided_enemy_units = pygame.sprite.spritecollide(self, PLAYER_SPRITES, False, collided=hitbox_collision)
-        collided_enemy_tower = pygame.sprite.spritecollide(self, TOWER_SPRITES, False, collided=hitbox_collision)
-        self.attack(collided_enemy_tower + collided_enemy_units)
+        if pygame.sprite.spritecollideany(self, ENEMIES_SPRITES, collided=hitbox_collision):
+            collided_enemy_units = pygame.sprite.spritecollide(self, ENEMIES_SPRITES, False, collided=hitbox_collision)
+            self.attack(collided_enemy_units)
+            return
+        self.move()
 
 
 class EnemyUnit(Unit):
     def __init__(self, name, x, y, *groups):
         super(EnemyUnit, self).__init__(name, x, y, *groups)
-        self.speed = 1
+        self.speed = -self.speed
         self.range.width -= 2 * self.range.width + self.rect.width
+
+    def move_range(self):
+        cur = self.con.cursor()
+        self.range = self.rect.copy()
+        self.range.x += cur.execute(f"SELECT range FROM units WHERE name=\"{self.name}\"").fetchall()[0][0]
 
     def update(self, *args) -> None:
         self.iteration += 1
@@ -171,11 +182,10 @@ class EnemyUnit(Unit):
             self.update_death()
             return
 
-        if not pygame.sprite.spritecollideany(self, PLAYER_SPRITES):
-            if not pygame.sprite.spritecollideany(self, TOWER_SPRITES):
-                self.move()
-                return
+        self.tba = max(0, self.tba - 1)
 
-        collided_player_units = pygame.sprite.spritecollide(self, PLAYER_SPRITES, False, collided=hitbox_collision)
-        collided_player_tower = pygame.sprite.spritecollide(self, TOWER_SPRITES, False, collided=hitbox_collision)
-        self.attack(collided_player_tower + collided_player_units)
+        if pygame.sprite.spritecollideany(self, PLAYER_SPRITES, collided=hitbox_collision):
+            collided_enemy_units = pygame.sprite.spritecollide(self, PLAYER_SPRITES, False, collided=hitbox_collision)
+            self.attack(collided_enemy_units)
+            return
+        self.move()
