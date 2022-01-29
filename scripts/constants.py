@@ -17,6 +17,7 @@ DATABASE = "data\\stats_db.db"
 ALL_SPRITES = pygame.sprite.Group()
 ENEMIES_SPRITES = pygame.sprite.Group()
 PLAYER_SPRITES = pygame.sprite.Group()
+DEAD_SPRITES = pygame.sprite.Group()
 
 WHITE = pygame.Color("white")
 BLACK = pygame.Color("black")
@@ -48,7 +49,7 @@ def load_image(name, colorkey=None):
 
 
 def load_sound(name):
-    fullname = os.path.join('data', 'sounds', "audio", name)
+    fullname = os.path.join('data', "audio", 'sounds', name)
     if not os.path.isfile(fullname):
         print(f"Файл со звуком '{fullname}' не найден")
         terminate()
@@ -56,7 +57,7 @@ def load_sound(name):
 
 
 def play_background_music(name):
-    fullname = os.path.join('data', 'sounds', "background music", name)
+    fullname = os.path.join('data', "audio", "background music", name)
     if not os.path.isfile(fullname):
         print(f"Файл со звуком '{fullname}' не найден")
         terminate()
@@ -76,3 +77,4 @@ def clear_sprites():  # Очистка спрайтов
     ALL_SPRITES.empty()
     PLAYER_SPRITES.empty()
     ENEMIES_SPRITES.empty()
+

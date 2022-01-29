@@ -2,6 +2,7 @@ from scripts.units import *
 
 
 class PlayerTower(pygame.sprite.Sprite):
+
     def __init__(self, tower_id, *groups):
         super(PlayerTower, self).__init__(*groups)
 
@@ -11,8 +12,8 @@ class PlayerTower(pygame.sprite.Sprite):
         self.whole_img = cur.execute(f"SELECT whole_img FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
         self.whole_img = load_image(f"sprites\\towers\\{self.whole_img}")
 
-        self.broken_img = cur.execute(f"SELECT broken_img FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
-        self.broken_img = load_image(f"sprites\\towers\\{self.broken_img}")
+        self.broke_sound = load_sound("hammer-hit-break-windshield_gk8u8pn_.mp3")
+        self.destruction_sound = load_sound("GTA Wasted (Потрачено)_1ao1.mp3")
 
         self.max_hp = cur.execute(f"SELECT hp FROM towers WHERE tower_id={tower_id}").fetchall()[0][0]
         self.cur_hp = self.max_hp
@@ -24,9 +25,12 @@ class PlayerTower(pygame.sprite.Sprite):
         self.is_whole = True
 
     def defense(self, damage):
-        self.cur_hp -= damage
-        if self.cur_hp <= 0:
+        if self.cur_hp > 0 >= self.cur_hp - damage:
             self.is_whole = False
+            self.destruction_sound.play()
+        else:
+            self.broke_sound.play()
+        self.cur_hp -= damage
 
     def draw_health_bar(self, win):
         font = pygame.font.Font(None, 15)
@@ -40,8 +44,6 @@ class PlayerTower(pygame.sprite.Sprite):
     def update(self):
         if self.is_whole:
             self.image = self.whole_img
-        else:
-            self.image = self.broken_img
         self.image = self.draw_health_bar(self.image.copy())
 
     def spawn(self, name):
@@ -52,6 +54,7 @@ class EnemyTower(PlayerTower):
     def __init__(self, tower_id, *groups):
         super(EnemyTower, self).__init__(tower_id, *groups)
         self.rect.x = 0
+        self.destruction_sound = load_sound("odinochnyj-hlopok-vzryv.mp3")
 
     def spawn(self, name):
         cur = self.con.cursor()

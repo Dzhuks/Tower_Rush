@@ -109,7 +109,7 @@ class Game:
             else:
                 self.iteration += 1
                 if self.iteration % 3 == 0:
-                    self.money += 1000
+                    self.money += 1
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False

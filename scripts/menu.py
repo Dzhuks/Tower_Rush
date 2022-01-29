@@ -50,6 +50,10 @@ class PauseButton(Button):
     def clicked(self, pos):
         if self.is_clicked(pos):
             self.pause = not self.pause
+        if self.pause:
+            pygame.mixer.music.pause()
+        else:
+            pygame.mixer.music.unpause()
 
 
 class Menu:
