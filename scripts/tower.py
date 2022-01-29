@@ -24,7 +24,6 @@ class PlayerTower(pygame.sprite.Sprite):
         self.is_whole = True
 
     def defense(self, damage):
-        print(self.cur_hp)
         self.cur_hp -= damage
         if self.cur_hp <= 0:
             self.is_whole = False
@@ -55,7 +54,13 @@ class EnemyTower(PlayerTower):
         self.rect.x = 0
 
     def spawn(self, name):
-        EnemyUnit(name, self, ENEMIES_SPRITES, ALL_SPRITES)
+        cur = self.con.cursor()
+        type_id = cur.execute(f"SELECT type_id FROM units WHERE name=\"{name}\"").fetchall()[0][0]
+        boss_id = cur.execute(f"SELECT type_id FROM types WHERE type=\"boss\"").fetchall()[0][0]
+        if type_id == boss_id:
+            Boss(name, self, ENEMIES_SPRITES, ALL_SPRITES)
+        else:
+            EnemyUnit(name, self, ENEMIES_SPRITES, ALL_SPRITES)
 
     def get_money(self):
         return 0

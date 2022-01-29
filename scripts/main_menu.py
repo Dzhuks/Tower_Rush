@@ -1,3 +1,4 @@
+import pygame.mixer_music
 from scripts.menu import *
 from scripts.constants import *
 from scripts.game import Game
@@ -16,17 +17,21 @@ class MainMenu(Menu):
         self.buttons.draw(self.bg)
 
     def run(self, win: pygame.Surface):
-        running = True
+        background_music = "honor-and-sword-main-11222.mp3"
+        play_background_music(background_music)
 
+        running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    pygame.mixer.music.stop()
                     running = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     # check if hit start btn
 
                     if self.start_btn.is_clicked(event.pos):
+                        pygame.mixer.music.stop()
                         game = Game()
                         game.run(win)
                         running = False

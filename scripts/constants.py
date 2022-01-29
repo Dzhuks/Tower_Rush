@@ -4,6 +4,7 @@ import os
 
 
 pygame.init()
+pygame.mixer.init()
 SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 600, 400
 BATTLEFIELD_SIZE = BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT = SCREEN_WIDTH, SCREEN_HEIGHT - 75
 screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -47,11 +48,20 @@ def load_image(name, colorkey=None):
 
 
 def load_sound(name):
-    fullname = os.path.join('data', 'sounds', name)
+    fullname = os.path.join('data', 'sounds', "audio", name)
     if not os.path.isfile(fullname):
         print(f"Файл со звуком '{fullname}' не найден")
         terminate()
     return pygame.mixer.Sound(fullname)
+
+
+def play_background_music(name):
+    fullname = os.path.join('data', 'sounds', "background music", name)
+    if not os.path.isfile(fullname):
+        print(f"Файл со звуком '{fullname}' не найден")
+        terminate()
+    pygame.mixer.music.load(fullname)
+    pygame.mixer.music.play(-1)
 
 
 def load_font(name, size=30):

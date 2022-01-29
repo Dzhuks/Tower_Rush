@@ -162,8 +162,8 @@ class Unit(pygame.sprite.Sprite):
 
 
 class EnemyUnit(Unit):
-    def __init__(self, name, x, y, *groups):
-        super(EnemyUnit, self).__init__(name, x, y, *groups)
+    def __init__(self, name, tower, *groups):
+        super(EnemyUnit, self).__init__(name, tower, *groups)
         self.speed = -self.speed
         self.range.width -= 2 * self.range.width + self.rect.width
 
@@ -192,3 +192,11 @@ class EnemyUnit(Unit):
             self.attack(collided_enemy_units)
             return
         self.move()
+
+
+class Boss(EnemyUnit):
+    background_music = "Motoi Sakuraba - Vordt of the Boreal Valley.mp3"
+
+    def __init__(self, name, tower, *groups):
+        super(Boss, self).__init__(name, tower, *groups)
+        play_background_music(Boss.background_music)

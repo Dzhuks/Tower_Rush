@@ -1,9 +1,12 @@
+import pygame.mixer_music
 from scripts.constants import *
 
 
 def start_screen(win: pygame.Surface):
     count_frames = 0
     speed = 1 / FPS
+    fon = pygame.transform.scale(load_image('start_screen\\background_start.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
+    font = pygame.font.Font(None, 18)
     intro_text = ["Котики. Люди. Школьники.",
                   "Когда-то давно все эти расы жили в мире.",
                   "Но всё изменилось, когда Поносенко всех переиграл и уничтожил.",
@@ -12,13 +15,14 @@ def start_screen(win: pygame.Surface):
                   "Прошло десять лет, и мы с Маратом нашли нового Амогуса, в маге жука по имени Джук.",
                   "И хотя его искусство покорения жука было велико, ему предстояло ещё многому научиться.",
                   "Но я верила, что Джук спасёт мир."]
-    font = pygame.font.Font(None, 18)
-    fon = pygame.transform.scale(load_image('start_screen\\background_start.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
+    background_music = "cinematic-dramatic-11120.mp3"
+    play_background_music(background_music)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                pygame.mixer.music.stop()
                 return  # начинаем игру
         win.fill(BLACK)
         win.blit(fon, (0, 0))
@@ -33,4 +37,6 @@ def start_screen(win: pygame.Surface):
         pygame.display.flip()
         count_frames += 1
         if text_coord <= 0:
+            pygame.mixer.music.stop()
             return
+

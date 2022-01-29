@@ -15,7 +15,7 @@ class Game:
         self.pause_button = PauseButton("pause_button", 0, 0, self.buttons, ALL_SPRITES)
 
         self.cur_level = 1
-        self.levels = {1: {"trollface": (5, 20)}, 2: {}, 3: {}}
+        self.levels = {1: {"trollface": (5, -1)}, 2: {}, 3: {"rick astley": (10, -1)}}
         self.render_level()
         self.iteration = 0
 
@@ -29,24 +29,25 @@ class Game:
 
         cur = self.con.cursor()
         que = f"""
-        SELECT level_name, bg, enemy_tower_id, player_tower_id FROM levels 
+        SELECT level_name, bg, background_music, enemy_tower_id, player_tower_id FROM levels 
             WHERE level_number={self.cur_level}"""
-        result = cur.execute(que).fetchall()[0]
+        result = cur.execute(que).fetchall()
         if not result:
             self.win()
             return
 
-        level_name, background, enemy_tower_id, player_tower_id = result
+        level_name, background, background_music, enemy_tower_id, player_tower_id = result[0]
         self.level_name = level_name
         self.bg = load_image(background)
         self.enemy_tower = EnemyTower(enemy_tower_id, ENEMIES_SPRITES, ALL_SPRITES)
         self.player_tower = PlayerTower(player_tower_id, PLAYER_SPRITES, ALL_SPRITES)
+        play_background_music(background_music)
         ALL_SPRITES.add(self.pause_button)
 
     def add_units(self):
         cur = self.con.cursor()
         que = """SELECT name FROM units 
-    WHERE side=(SELECT side_id FROM sides WHERE side="player")"""
+    WHERE type_id=(SELECT type_id FROM types WHERE type="player")"""
         units = cur.execute(que).fetchall()
         for unit in units:
             unit = unit[0]
@@ -64,10 +65,10 @@ class Game:
         for enemy in enemies.keys():
             spawn_time, frequency = enemies[enemy]
             spawn_time *= FPS
-            frequency *= FPS
             if self.iteration == spawn_time:
                 self.enemy_tower.spawn(enemy)
-            if self.iteration > spawn_time:
+            if self.iteration > spawn_time and frequency != -1:
+                frequency *= FPS
                 if self.iteration % frequency == 0:
                     self.enemy_tower.spawn(enemy)
 
@@ -95,6 +96,7 @@ class Game:
         running = True
         paused = False
         clock = pygame.time.Clock()
+
         while running:
             if paused:
                 for event in pygame.event.get():
@@ -107,7 +109,7 @@ class Game:
             else:
                 self.iteration += 1
                 if self.iteration % 3 == 0:
-                    self.money += 1
+                    self.money += 1000
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
@@ -120,6 +122,7 @@ class Game:
                 if not self.enemy_tower.is_whole:
                     self.cur_level += 1
                     self.render_level()
+                    pygame.mixer.music.play()
 
                 if not self.player_tower.is_whole:
                     game_over(win)
