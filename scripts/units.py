@@ -47,6 +47,16 @@ def hitbox_collision(sprite1, sprite2):
     return sprite1.range.colliderect(sprite2.rect)
 
 
+def cut_sheet(sheet: pygame.Surface, rows, columns):
+    frames = []
+    size = width, height = sheet.get_width() // columns, sheet.get_height() // rows
+    for j in range(rows):
+        for i in range(columns):
+            frame_location = (width * i, height * j)
+            frames.append(sheet.subsurface(pygame.Rect(frame_location, size)))
+    return frames
+
+
 class Unit(pygame.sprite.Sprite):
     DEATH_ANIMATION = load_image("sprites\\death_animation.png")
     DEATH_ANIMATION_ROWS = 5
@@ -63,7 +73,7 @@ class Unit(pygame.sprite.Sprite):
         animation = load_image(cur.execute(f"SELECT animation FROM units WHERE name=\"{name}\"").fetchall()[0][0])
         rows, columns = cur.execute(f"SELECT rows, columns FROM units WHERE name=\"{name}\"").fetchall()[0]
 
-        self.frames = self.cut_sheet(animation, rows, columns)
+        self.frames = cut_sheet(animation, rows, columns)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect()
@@ -73,7 +83,7 @@ class Unit(pygame.sprite.Sprite):
         self.x_pos = self.rect.x
 
         self.cur_death_frame = -1
-        self.death_frames = self.cut_sheet(Unit.DEATH_ANIMATION, Unit.DEATH_ANIMATION_ROWS, Unit.DEATH_ANIMATION_COLUMNS)
+        self.death_frames = cut_sheet(Unit.DEATH_ANIMATION, Unit.DEATH_ANIMATION_ROWS, Unit.DEATH_ANIMATION_COLUMNS)
 
         self.range = self.rect.copy()
         self.move_range()
@@ -91,15 +101,6 @@ class Unit(pygame.sprite.Sprite):
 
         self.alive = True
         self.iteration = 0
-
-    def cut_sheet(self, sheet: pygame.Surface, rows, columns):
-        frames = []
-        size = width, height = sheet.get_width() // columns, sheet.get_height() // rows
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (width * i, height * j)
-                frames.append(sheet.subsurface(pygame.Rect(frame_location, size)))
-        return frames
 
     def update_death(self):
         self.cur_death_frame += 1
@@ -144,12 +145,6 @@ class Unit(pygame.sprite.Sprite):
             self.alive = False
         self.create_particles(self.rect.center)
 
-    def get_money(self):
-        if self.alive:
-            return 0
-        money, self.money = self.money, 0
-        return
-
     def update(self, *args) -> None:
         self.iteration += 1
         if not self.alive:
@@ -162,6 +157,7 @@ class Unit(pygame.sprite.Sprite):
             collided_enemy_units = pygame.sprite.spritecollide(self, ENEMIES_SPRITES, False, collided=hitbox_collision)
             self.attack(collided_enemy_units)
             return
+
         self.move()
 
 
@@ -175,6 +171,13 @@ class EnemyUnit(Unit):
         cur = self.con.cursor()
         self.range = self.rect.copy()
         self.range.x += cur.execute(f"SELECT range FROM units WHERE name=\"{self.name}\"").fetchall()[0][0]
+
+    def get_money(self):
+        if self.alive:
+            return 0
+
+        money, self.money = self.money, 0
+        return money
 
     def update(self, *args) -> None:
         self.iteration += 1

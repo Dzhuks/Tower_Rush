@@ -56,3 +56,6 @@ class EnemyTower(PlayerTower):
 
     def spawn(self, name):
         EnemyUnit(name, self, ENEMIES_SPRITES, ALL_SPRITES)
+
+    def get_money(self):
+        return 0
