@@ -1,5 +1,3 @@
-import pygame
-import sqlite3
 from scripts.menu import BuyMenu, PauseButton
 from scripts.tower import *
 from scripts.game_over import game_over
@@ -10,69 +8,94 @@ class Game:
         self.con = sqlite3.connect(DATABASE)
         self.money = 0
 
-        self.menu = BuyMenu(load_image("backgrounds\\buy_menu.png"), 0, SCREEN_HEIGHT - 100)
-        # self.add_units()
+        self.menu = BuyMenu()
+        self.add_units()
+
+        self.buttons = pygame.sprite.Group()
+        self.pause_button = PauseButton("pause_button", 0, 0, self.buttons, ALL_SPRITES)
 
         self.cur_level = 1
-        self.levels = {}
+        self.levels = {1: {"trollface": (5, 20)}, 2: {}, 3: {}}
         self.render_level()
-        self.pause_button = PauseButton("pause_button", 550, 0, ALL_SPRITES)
+        self.iteration = 0
+
+    def zeroing_out(self):
+        clear_sprites()
+        self.money = 0
+        self.iteration = 0
 
     def render_level(self):
-        for sprite in PLAYER_SPRITES.sprites():
-            sprite.kill()
-        for sprite in ENEMIES_SPRITES.sprites():
-            sprite.kill()
-        PLAYER_SPRITES.empty()
-        ENEMIES_SPRITES.empty()
+        self.zeroing_out()
+
         cur = self.con.cursor()
         que = f"""
-        SELECT bg, enemy_tower_id, player_tower_id FROM levels 
+        SELECT level_name, bg, enemy_tower_id, player_tower_id FROM levels 
             WHERE level_number={self.cur_level}"""
         result = cur.execute(que).fetchall()[0]
         if not result:
             self.win()
             return
-        self.bg = result[0]
 
-        enemy_tower_id = result[1]
-        player_tower_id = result[2]
-
-        self.enemy_tower = EnemyTower(enemy_tower_id, 0, 200, TOWER_SPRITES)
-        self.player_tower = PlayerTower(player_tower_id, 600, 200, TOWER_SPRITES)
+        level_name, background, enemy_tower_id, player_tower_id = result
+        self.level_name = level_name
+        self.bg = load_image(background)
+        self.enemy_tower = EnemyTower(enemy_tower_id, ENEMIES_SPRITES, ALL_SPRITES)
+        self.player_tower = PlayerTower(player_tower_id, PLAYER_SPRITES, ALL_SPRITES)
+        ALL_SPRITES.add(self.pause_button)
 
     def add_units(self):
         cur = self.con.cursor()
-        units = ["cool_doge", "dababy", "nyan_cat", "pop_cat", "uganda_knucles"]
+        que = """SELECT name FROM units 
+    WHERE side=(SELECT side_id FROM sides WHERE side="player")"""
+        units = cur.execute(que).fetchall()
         for unit in units:
-            unit_img, cost = cur.execute(f"SELECT image, cost FROM units WHERE name={unit}").fetchall()[0]
-            self.menu.add_button(unit, cost, unit_img)
+            unit = unit[0]
+            que = f"SELECT cost FROM units WHERE name=\"{unit}\""
+            cost = cur.execute(que).fetchall()[0][0]
+            self.menu.add_unit(unit, cost)
 
     def spawn(self, name, cost):
         if self.money >= cost:
             self.money -= cost
             self.player_tower.spawn(name)
 
-    def gen_enemies(self, frames):
-        return
+    def gen_enemies(self):
         enemies = self.levels[self.cur_level]
         for enemy in enemies.keys():
-            time = enemies[enemy]
-            if frames % time == 0:
+            spawn_time, frequency = enemies[enemy]
+            spawn_time *= FPS
+            frequency *= FPS
+            if self.iteration == spawn_time:
                 self.enemy_tower.spawn(enemy)
+            if self.iteration > spawn_time:
+                if self.iteration % frequency == 0:
+                    self.enemy_tower.spawn(enemy)
 
     def draw_money_string(self, win):
         font = pygame.font.Font(None, 30)
-        string_rendered = font.render(f"{self.money}$", True, ORANGE)
-        win.blit(string_rendered, (win.get_width() - string_rendered.get_width(), 25))
+        string_rendered = font.render(f"{self.money}$", True, DARK_GREEN)
+        win.blit(string_rendered, (win.get_width() - string_rendered.get_width(), 0))
+
+    def draw(self, win):
+        win.fill(pygame.Color('black'))
+        win.blit(self.bg, (0, 0))
+
+        ALL_SPRITES.draw(win)
+        ENEMIES_SPRITES.draw(win)
+        PLAYER_SPRITES.draw(win)
+
+        self.menu.draw(win)
+
+        self.draw_money_string(win)
+        font = pygame.font.Font(None, 30)
+        string_rendered = font.render(self.level_name, True, ORANGE)
+        win.blit(string_rendered, (win.get_width() / 2 - string_rendered.get_width() / 2, 0))
 
     def run(self, win):
         running = True
         paused = False
         clock = pygame.time.Clock()
-        iteration = 0
         while running:
-            iteration += 1
             if paused:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -82,6 +105,9 @@ class Game:
                             self.pause_button.clicked(event.pos)
                             paused = self.pause_button.pause
             else:
+                self.iteration += 1
+                if self.iteration % 3 == 0:
+                    self.money += 1
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
@@ -98,13 +124,12 @@ class Game:
                 if not self.player_tower.is_whole:
                     game_over(win)
                     running = False
-                self.gen_enemies(iteration)
+                self.gen_enemies()
+
                 ALL_SPRITES.update()
-                win.fill(pygame.Color('black'))
-                ALL_SPRITES.draw(win)
-                TOWER_SPRITES.draw(win)
-                ENEMIES_SPRITES.draw(win)
-                PLAYER_SPRITES.draw(win)
-                self.menu.draw(win)
+                for sprite in ENEMIES_SPRITES.sprites():
+                    self.money += sprite.get_money()
+                self.draw(win)
+
             clock.tick(FPS)
             pygame.display.flip()

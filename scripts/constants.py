@@ -5,7 +5,7 @@ import os
 
 pygame.init()
 SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 600, 400
-BATTLEFIELD_SIZE = BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT = SCREEN_WIDTH, SCREEN_HEIGHT - 100
+BATTLEFIELD_SIZE = BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT = SCREEN_WIDTH, SCREEN_HEIGHT - 75
 screen = pygame.display.set_mode(SCREEN_SIZE)
 
 FPS = 60
@@ -60,3 +60,9 @@ def load_font(name, size=30):
         print(f"Файл с шрифтом '{fullname}' не найден")
         terminate()
     return pygame.font.Font(fullname, size)
+
+
+def clear_sprites():  # Очистка спрайтов
+    ALL_SPRITES.empty()
+    PLAYER_SPRITES.empty()
+    ENEMIES_SPRITES.empty()
