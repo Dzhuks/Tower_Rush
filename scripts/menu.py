@@ -19,7 +19,7 @@ class BuyButton(Button):
         super(BuyButton, self).__init__(unit_name, img, x, y, *group)
         self.cost = cost
         font = pygame.font.Font(None, 20)
-        cost_text = font.render(str(self.cost), True, ORANGE)
+        cost_text = font.render(str(self.cost), True, WHITE)
         cost_text_x = self.image.get_width() - cost_text.get_width()
         cost_text_y = self.image.get_height() - cost_text.get_height()
         self.image.blit(cost_text, (cost_text_x, cost_text_y))
@@ -57,16 +57,17 @@ class Menu:
         self.buttons = pygame.sprite.Group()
 
     def draw(self, window: pygame.Surface):
-        image = self.bg.copy()
-        self.buttons.draw(image)
-        window.blit(image, self.rect.topleft)
+        window.blit(self.bg, self.rect.topleft)
+        self.buttons.draw(window)
 
 
 class BuyMenu(Menu):
+    def __init__(self):
+        super(BuyMenu, self).__init__(load_image("backgrounds\\buy_menu.png"), 0, SCREEN_HEIGHT - 100)
+    
     def add_button(self, unit_name, cost, unit_img: pygame.Surface):
-        btn_width, btn_height = 75, 50
-        rect = (unit_img.get_width() / 2 - btn_width / 2, unit_img.get_height() / 2 - btn_height / 2, btn_width, btn_height)
-        btn_img = unit_img.subsurface(rect)
+        btn_size = btn_width, btn_height = 90, 50
+        btn_img = pygame.transform.scale(unit_img, btn_size)
         btn_x = self.rect.x + (btn_width + 10) * len(self.buttons.sprites())
         btn_y = self.rect.y + self.rect.height - btn_height
         self.buttons.add(BuyButton(unit_name, cost, btn_img, btn_x, btn_y, self.buttons))
