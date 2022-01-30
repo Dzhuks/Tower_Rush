@@ -1,11 +1,10 @@
-import pygame.mixer_music
 from scripts.constants import *
 
 
 def start_screen(win: pygame.Surface):
     count_frames = 0
     speed = 1 / FPS
-    fon = pygame.transform.scale(load_image('start_screen\\background_start.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
+    fon = pygame.transform.scale(load_image('credits\\start_screen.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
     font = pygame.font.Font(None, 18)
     intro_text = ["Котики. Люди. Школьники.",
                   "Когда-то давно все эти расы жили в мире.",
@@ -40,3 +39,6 @@ def start_screen(win: pygame.Surface):
             pygame.mixer.music.stop()
             return
 
+
+def end_screen(win):
+    pass

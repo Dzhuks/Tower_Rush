@@ -1,7 +1,6 @@
-from scripts.constants import *
-from scripts.start_screen import start_screen
+from scripts.credits import *
 from scripts.main_menu import MainMenu
-
+from scripts.constants import *
 
 if __name__ == '__main__':
     pygame.init()

@@ -3,7 +3,7 @@ from scripts.constants import *
 
 def game_over(win: pygame.Surface):
     alpha = 0
-    fon = load_image("game_over\\game_over.png")
+    fon = load_image("end_game\\game_over.png")
     font = load_font("coldnightforalligators.otf", 60)
     background_music = "hello-darkness-my-old-friend-sound-effect.mp3"
 
@@ -30,3 +30,7 @@ def game_over(win: pygame.Surface):
         pygame.display.flip()
         alpha += 1
         clock.tick(FPS)
+
+
+def win(win):
+    pass

@@ -1,6 +1,6 @@
 from scripts.menu import BuyMenu, PauseButton, SoundOnButton
 from scripts.tower import *
-from scripts.game_over import game_over
+from scripts.end_game import *
 
 
 class Game:
