@@ -1,12 +1,18 @@
+import time
+import csv
+
 from scripts.menu import BuyMenu, PauseButton, SoundOnButton
 from scripts.tower import *
 from scripts.end_game import *
+from scripts.credits import *
 
 
 class Game:
     def __init__(self):
         self.con = sqlite3.connect(DATABASE)
         self.money = 0
+        self.pause = False
+        self.music_pause = False
 
         self.menu = BuyMenu()
         self.add_units()
@@ -15,15 +21,29 @@ class Game:
         self.pause_button = PauseButton("pause_button", 0, 0, self.buttons, ALL_SPRITES)
         self.sound_on_off = SoundOnButton("sound_on_off", 50, 0, self.buttons, ALL_SPRITES)
 
-        self.cur_level = 1
-        self.levels = {1: {"trollface": (5, -1)}, 2: {}, 3: {"rick astley": (10, -1)}}
+        self.cur_level = save.last_save()
+        if self.cur_level is None:
+            self.cur_level = 1
         self.render_level()
+        self.levels = {}
+        self.render_enemies()
         self.iteration = 0
+        self.start_time = time.time()  # время начало игры
+        self.killed_enemies = 0
 
     def zeroing_out(self):
         clear_sprites()
         self.money = 0
         self.iteration = 0
+        self.start_time = time.time()  # время начало игры
+        self.killed_enemies = 0
+
+    def save_progress(self, status):
+        level = self.cur_level
+        period = convert_time_to_string(time.time() - self.start_time)
+        killed_enemies = self.killed_enemies
+        tower_hp = self.player_tower.cur_hp
+        save.save(level, period, killed_enemies, tower_hp, status)
 
     def render_level(self):
         self.zeroing_out()
@@ -34,7 +54,9 @@ class Game:
             WHERE level_number={self.cur_level}"""
         result = cur.execute(que).fetchall()
         if not result:
-            self.win()
+            self.cur_level -= 1
+            self.save_progress("win")
+            end_screen()
             return
 
         level_name, background, background_music, enemy_tower_id, player_tower_id = result[0]
@@ -42,7 +64,7 @@ class Game:
         self.bg = load_image(background)
         self.enemy_tower = EnemyTower(enemy_tower_id, ENEMIES_SPRITES, ALL_SPRITES)
         self.player_tower = PlayerTower(player_tower_id, PLAYER_SPRITES, ALL_SPRITES)
-        play_background_music(background_music)
+        play_background_music(background_music, self.music_pause)
         ALL_SPRITES.add(self.pause_button)
 
     def add_units(self):
@@ -95,23 +117,23 @@ class Game:
 
         self.buttons.draw(win)
 
-    def run(self, win):
+    def run(self, window):
         running = True
-        paused = False
         clock = pygame.time.Clock()
 
         while running:
-            if paused:
+            if self.pause:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         self.buttons.update(event)
-                        paused = self.pause_button.pause
+                        self.pause = self.pause_button.pause
+                        self.music_pause = self.sound_on_off.pause
             else:
                 self.iteration += 1
                 if self.iteration % 3 == 0:
-                    self.money += 1
+                    self.money += 100
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
@@ -120,21 +142,35 @@ class Game:
                             self.spawn(*self.menu.get_clicked(event.pos))
                         else:
                             self.buttons.update(event)
-                            paused = self.pause_button.pause
+                            self.pause = self.pause_button.pause
+                            self.music_pause = self.sound_on_off.pause
                 if not self.enemy_tower.is_whole:
+                    self.save_progress("win")
                     self.cur_level += 1
+                    win()
                     self.render_level()
-                    pygame.mixer.music.play()
 
                 if not self.player_tower.is_whole:
-                    game_over(win)
+                    self.save_progress("lose")
+                    game_over()
                     running = False
                 self.gen_enemies()
 
                 ALL_SPRITES.update()
                 for sprite in ENEMIES_SPRITES.sprites():
                     self.money += sprite.get_money()
-                self.draw(win)
+                self.draw(window)
 
             clock.tick(FPS)
             pygame.display.flip()
+
+    def render_enemies(self):
+        with open("data\\levels.csv", "r") as csvfile:
+            reader = csv.reader(csvfile, delimiter=';', quotechar='"')
+            next(reader)
+            for item in reader:
+                self.levels[int(item[0])] = {}
+                for i in item[1:]:
+                    name, value = i.split(":")
+                    time, delta = map(int, value[1:-1].split(", "))
+                    self.levels[int(item[0])][name] = (time, delta)

@@ -1,0 +1,4 @@
+level;enemies
+1;"weak doge":(10, 15);"polish cow":(15, 20)
+2;"weak doge":(10, 10);"polish cow":(15, 20);"trollface":(25, 25)
+3;"weak doge":(10, 10);"polish cow":(15, 20);"trollface":(25, 25);"rick astley":(35, -1)

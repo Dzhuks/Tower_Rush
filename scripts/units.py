@@ -3,6 +3,7 @@ import random
 
 import pygame.sprite
 from scripts.constants import *
+from scripts.functions import *
 
 
 class Particle(pygame.sprite.Sprite):
@@ -202,7 +203,7 @@ class EnemyUnit(Unit):
 
 
 class Boss(EnemyUnit):
-    background_music = "Motoi Sakuraba - Vordt of the Boreal Valley.mp3"
+    background_music = "Rick_Astley_-_Never_Gonna_Give_You_Up_(musmore.com).mp3"
 
     def __init__(self, name, tower, *groups):
         super(Boss, self).__init__(name, tower, *groups)
