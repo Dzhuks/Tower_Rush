@@ -34,26 +34,51 @@ class BuyButton(Button):
             return self.name, self.cost
 
 
-class PauseButton(Button):
-    def __init__(self, name, x, y, *group):
-        self.pause_img = load_image("icons\\pause_button.png")
-        self.active_img = load_image("icons\\resume_button.png")
-        super(PauseButton, self).__init__(name, self.pause_img, x, y, *group)
+class OnOffButton(Button):
+    def __init__(self, name, pause_img, active_img, x, y, *group):
+        super(OnOffButton, self).__init__(name, active_img, x, y, *group)
+        self.pause_img = pause_img
+        self.active_img = active_img
         self.pause = False
 
-    def update(self, *args) -> None:
+    def update(self, *args, **kwargs) -> None:
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN:
+            self.clicked(args[0].pos)
         if self.pause:
-            self.image = self.active_img
-        else:
             self.image = self.pause_img
+        else:
+            self.image = self.active_img
+
+    def clicked(self, pos):
+        pass
+
+
+class PauseButton(OnOffButton):
+    pause_img = load_image("icons\\pause_button.png")
+    active_img = load_image("icons\\resume_button.png")
+
+    def __init__(self, name, x, y, *group):
+        super(PauseButton, self).__init__(name, PauseButton.pause_img, PauseButton.active_img, x, y, *group)
 
     def clicked(self, pos):
         if self.is_clicked(pos):
             self.pause = not self.pause
-        if self.pause:
-            pygame.mixer.music.pause()
-        else:
-            pygame.mixer.music.unpause()
+
+
+class SoundOnButton(OnOffButton):
+    pause_img = load_image("icons\\sound_off_icon.png")
+    active_img = load_image("icons\\sound_on_icon.png")
+
+    def __init__(self, name, x, y, *group):
+        super(SoundOnButton, self).__init__(name, SoundOnButton.pause_img, SoundOnButton.active_img, x, y, *group)
+
+    def clicked(self, pos):
+        if self.is_clicked(pos):
+            self.pause = not self.pause
+            if self.pause:
+                pygame.mixer.music.pause()
+            else:
+                pygame.mixer.music.unpause()
 
 
 class Menu:

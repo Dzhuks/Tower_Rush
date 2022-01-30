@@ -1,4 +1,4 @@
-from scripts.menu import BuyMenu, PauseButton
+from scripts.menu import BuyMenu, PauseButton, SoundOnButton
 from scripts.tower import *
 from scripts.game_over import game_over
 
@@ -13,6 +13,7 @@ class Game:
 
         self.buttons = pygame.sprite.Group()
         self.pause_button = PauseButton("pause_button", 0, 0, self.buttons, ALL_SPRITES)
+        self.sound_on_off = SoundOnButton("sound_on_off", 50, 0, self.buttons, ALL_SPRITES)
 
         self.cur_level = 1
         self.levels = {1: {"trollface": (5, -1)}, 2: {}, 3: {"rick astley": (10, -1)}}
@@ -78,7 +79,7 @@ class Game:
         win.blit(string_rendered, (win.get_width() - string_rendered.get_width(), 0))
 
     def draw(self, win):
-        win.fill(pygame.Color('black'))
+        win.fill(BLACK)
         win.blit(self.bg, (0, 0))
 
         ALL_SPRITES.draw(win)
@@ -92,6 +93,8 @@ class Game:
         string_rendered = font.render(self.level_name, True, ORANGE)
         win.blit(string_rendered, (win.get_width() / 2 - string_rendered.get_width() / 2, 0))
 
+        self.buttons.draw(win)
+
     def run(self, win):
         running = True
         paused = False
@@ -103,9 +106,8 @@ class Game:
                     if event.type == pygame.QUIT:
                         running = False
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        if self.pause_button.is_clicked(event.pos):
-                            self.pause_button.clicked(event.pos)
-                            paused = self.pause_button.pause
+                        self.buttons.update(event)
+                        paused = self.pause_button.pause
             else:
                 self.iteration += 1
                 if self.iteration % 3 == 0:
@@ -116,8 +118,8 @@ class Game:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.menu.get_clicked(event.pos) is not None:
                             self.spawn(*self.menu.get_clicked(event.pos))
-                        elif self.pause_button.is_clicked(event.pos):
-                            self.pause_button.clicked(event.pos)
+                        else:
+                            self.buttons.update(event)
                             paused = self.pause_button.pause
                 if not self.enemy_tower.is_whole:
                     self.cur_level += 1
