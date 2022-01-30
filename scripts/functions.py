@@ -1,13 +1,23 @@
 import sys
 import os
+
+import pygame.mixer
 from scripts.constants import *
 
 
+# инициализация pygame
+pygame.init()
+pygame.mixer.init()
+pygame.font.init()
+
+
+# функция для завершения игры
 def terminate():
     pygame.quit()
     sys.exit()
 
 
+# функция загрузки изображения
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', 'images', name)
     # если файл не существует, то выходим
@@ -25,26 +35,30 @@ def load_image(name, colorkey=None):
     return image
 
 
+# функция загрузки звука
 def load_sound(name):
     fullname = os.path.join('data', "audio", 'sounds', name)
     if not os.path.isfile(fullname):
         print(f"Файл со звуком '{fullname}' не найден")
         terminate()
-    return pygame.mixer.Sound(fullname)
+    sound = pygame.mixer.Sound(fullname)
+    sound.set_volume(VOLUME)
+    return sound
 
 
+# функция загрузки фоновой музыки
 def play_background_music(name, paused=False):
-    print(paused)
     fullname = os.path.join('data', "audio", "background music", name)
     if not os.path.isfile(fullname):
         print(f"Файл со звуком '{fullname}' не найден")
         terminate()
     pygame.mixer.music.load(fullname)
-    pygame.mixer.music.set_volume(0.4)
-    if not paused:
+    pygame.mixer.music.set_volume(VOLUME)
+    if not paused:  # если нажата пауза, то не играть
         pygame.mixer.music.play(-1)
 
 
+# функция загрузки шрифта
 def load_font(name, size=30):
     fullname = os.path.join('data', 'fonts', name)
     if not os.path.isfile(fullname):
@@ -53,12 +67,14 @@ def load_font(name, size=30):
     return pygame.font.Font(fullname, size)
 
 
-def clear_sprites():  # Очистка спрайтов
+# функция очистки групп спрайтов
+def clear_sprites():
     ALL_SPRITES.empty()
     PLAYER_SPRITES.empty()
     ENEMIES_SPRITES.empty()
 
 
+# конвертирование времени в формат hh:mm
 def convert_time_to_string(time):
     time_difference = int(time)
     minutes = time_difference // 60

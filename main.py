@@ -1,4 +1,3 @@
-import pygame.display
 from scripts.credits import *
 from scripts.main_menu import MainMenu
 from scripts.constants import *

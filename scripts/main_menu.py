@@ -1,14 +1,14 @@
 import pygame.mixer_music
 from scripts.menu import *
-from scripts.constants import *
 from scripts.functions import *
 from scripts.game import Game
 
 
+# главное меню
 class MainMenu(Menu):
     def __init__(self):
-        bg = load_image('main_menu\\main_menu.png')
-        super(MainMenu, self).__init__(bg, 0, 0)
+        bg = load_image('main_menu\\main_menu.png')  # фон
+        super(MainMenu, self).__init__(bg, 0, 0)  # вызываем родительскии класс
 
         start_btn_img = load_image('main_menu\\start_button.png')
         start_btn_x = self.rect.width / 2 - start_btn_img.get_width() / 2
@@ -18,7 +18,7 @@ class MainMenu(Menu):
         self.buttons.draw(self.bg)
 
     def run(self, window: pygame.Surface):
-        background_music = "honor-and-sword-main-11222.mp3"
+        background_music = "honor-and-sword-main-11222.mp3"  # фоновая музыка
         play_background_music(background_music)
 
         running = True
@@ -32,11 +32,13 @@ class MainMenu(Menu):
                     # check if hit start btn
 
                     if self.start_btn.is_clicked(event.pos):
+                        # начинаем игру
                         pygame.mixer.music.stop()
                         game = Game()
                         game.run(window)
-                        running = False
+                        break
 
+            # рисуем на экране
             window.fill(pygame.color.Color("black"))
             window.blit(self.bg, self.rect.topleft)
             pygame.display.flip()
